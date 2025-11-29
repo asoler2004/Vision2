@@ -3,7 +3,7 @@ from agent import PublicationAgent
 
 if __name__ == "__main__":
     agent = PublicationAgent()
-
+    print("Agente creado")
     output = agent.run(
         image_path="se.webp",
         desc="mirada a la nada",
