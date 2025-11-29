@@ -15,7 +15,10 @@ class PublicationAgent:
         platform = platform.lower()
 
         # Paso 1 — BLIP analiza la imagen
+
+        print("Analizando imagen...")
         image_summary = analyze_image(image_path)
+        print("imagen analizada: ",image_summary)
         self.memory.append({
             "step": "image_summary",
             "value": image_summary
@@ -23,6 +26,7 @@ class PublicationAgent:
 
         # Paso 2 — Gemini genera estructura base
         struct = generate_base_structure(desc, tone, image_summary)
+        print("Resultado de Gemini: ", struct)
         self.memory.append({
             "step": "base_structure",
             "value": struct
