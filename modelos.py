@@ -8,8 +8,7 @@ import torch
 # Cargar variables de entorno
 load_dotenv()
 
-api_key = "AIzaSyBu2PEE7XZoFD-fpyzkOA6NsO0JXSxGOXk"
-print(os.getenv("GEMINI_API_KEY"))
+api_key = os.getenv("GEMINI_API_KEY")
 if not api_key:
     raise RuntimeError("Falta GEMINI_API_KEY en .env")
 
