@@ -391,8 +391,8 @@
         console.log("image data done");
         
         const options = {
-          headers: {'Content-Type': 'application/json', },
-          method: 'POST',          
+          method: 'POST',
+          headers: {'Content-Type': 'application/json', },                    
           body: JSON.stringify({
             user_id: 'demo_user',
             title: parsedJson.headline,
@@ -403,16 +403,19 @@
             status: 'published',
             version: '1',       
             metadata: metadata,  
-          })};
+        })};
 
         console.log("options: ", options)  
-        const response = await fetch("http://localhost:5000/upload", options)
-        
-
-    
-        console.log("response.ok: ",response.ok)
+        const response = await fetch("http://localhost:5000/upload", options);
         const result = await response.json();
         console.log("linea 380 - result = ", result);
+
+        // .then(response => response.json())
+        // .then(data => console.log(data));
+    
+        console.log("response.ok: ",response.ok)
+        // const result = await response.json();
+        
 
         if (response.ok) {
           showMessage("Historia guardada",'success');
@@ -490,6 +493,7 @@
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = "Generar publicación";
+        showMessage("Diseño de historia.",'success');
       }
     });
 

@@ -38,23 +38,13 @@ def upload_image_to_supabase(supabase: Client, file_content: bytes, user_id: str
             return None
         file_extension =  'jpg'
                
-        # Generate unique, sanitized filename
         filename = f"{user_id}_{timestamp}.{file_extension}"
-        # print(filename)
-        # Upload to storage
-        # 
-        # result = supabase.storage.from_("story-images").upload(filename, image_data)
-
+        
         response = supabase.storage.from_("story-images").upload(filename, file_content)
-        # print("supabase response: ",response)
+        
         public_url = supabase.storage.from_("story-images").get_public_url(filename)
-        # print("public_url", public_url)
+        
         return public_url
-        # return jsonify({
-        #     'success': True,
-        #     'message': "Imagen subida exitosamente",
-        #     'filename': filename,
-        #     'url': public_url}), 200
             
     except Exception as e:
         return jsonify({'error': f"Error procesando imagen: {str(e)}"}),500
@@ -68,7 +58,7 @@ def index():
 def upload_to_supabase():
     """Upload story to Supabase database with images uploaded to storage
        Expected JSON:
-       {'user_id': str(user_id),
+       'user_id': str(user_id),
         'title': 'title',
         'content': content,
         'tone': str(tone),
@@ -82,13 +72,12 @@ def upload_to_supabase():
                 'original_image_urls': original_image_urls  # Keep reference to original URLs
             }
         'version': 1,
-        'imagedata':"base64_encoded_data",
-               
-        }
+        'imagedata':"base64_encoded_data",              
+        
     """
     try:
         story_data = request.json
-        # print(story_data.keys())
+        print(story_data.keys())
         if not story_data:
             return jsonify({'error': 'No hay datos'}), 400
         
@@ -97,13 +86,12 @@ def upload_to_supabase():
         title = str(story_data['title'])
         content = story_data['content']
         tone = str(story_data['tone'])
-        images = story_data.get['images', []]  # Store Supabase URLs in images array
-        status = story_data.get['status', 'published']
-        metadata = story_data.get['metadata', {}]
-        version = story_data.get['version', 1] 
-        image_data = story_data.get['imagedata', '']
-        # mimetype = story_data.get('mimetype','application/octet-stream')
-
+        images = story_data.get('images', [])  # Store Supabase URLs in images array
+        status = story_data.get('status', 'published')
+        metadata = story_data.get('metadata', {})
+        version = story_data.get('version', 1) 
+        image_data = story_data.get('imagedata', '')
+        
         # print('user_id = ', user_id)
         # print('title = ', title)
         # # print('content = ',content)
@@ -113,19 +101,12 @@ def upload_to_supabase():
         # print('metadata = ',metadata)
         # print('version = ', version) 
         # # print('image_data = ', image_data)
-        # Decode base64 data
+        
         try:
             file_content = base64.b64decode(image_data)
         except Exception as e:
             return jsonify({'error': f'Invalid base64 data: {str(e)}'}),400
 
-        # Get original image URLs - convert arrays to lists
-        # original_image_urls = to_list(story_data['image_url'])
-        # story_ids = to_list(story_data['story_id'])
-        
-        # Upload images to Supabase storage
-        # print("📤 Subiendo imágenes al almacenamiento de Supabase...")
-        # print('file content length:',len(file_content))
         uploaded_image_urls = []
         
         timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -163,13 +144,8 @@ def upload_to_supabase():
             'content': content,
             'tone': tone,
             'images': uploaded_image_urls,  # Store Supabase URLs in images array
-            'status': 'published',
-            'metadata': {
-                'license': story_data['license'],
-                'album_id': story_data['album_id'],
-                'original_story_id':  "",
-                'original_image_urls': ""
-            }
+            'status': status,
+            'metadata': metadata  # Use the metadata sent from frontend
         }
         
 
@@ -177,7 +153,7 @@ def upload_to_supabase():
 
         result = supabase.table('stories').insert(story_record).execute()
         print(result)
-        # Check result more safely
+        
         if result :
             print(f"🎉 Historia '{story_data['title']}' subida exitosamente!")
             return jsonify({'success': True, 'message': 'Historia subida exitosamente'}), 200
@@ -200,26 +176,7 @@ def upload_to_supabase():
 
 
 
-        #     selected_tone = ""
 
-        #     if supabase:
-        #         use_service_key = True
-        #         upload_to_supabase(supabase, story, user_id, selected_tone, use_service_key)
-        # else:
-    
-
-# def parse_story_data(story_dict: Dict) -> Dict:
-#     """Parse story dictionary to extract structured data"""
-#     if isinstance(story_dict, str):
-#         story_dict = ast.literal_eval(story_dict)
-    
-#     return {
-#         'image_id': story_dict.get('image_id', []),
-#         'image_url': story_dict.get('image_url', []),
-#         'story_index': story_dict.get('story_index', []),
-#         'story_id': story_dict.get('story_id', []),
-#         'text': story_dict.get('text', [])
-#     }
 
 def is_array_like(obj) -> bool:
     """Check if object is array-like (list, numpy array, etc.)"""
@@ -241,17 +198,19 @@ def download_image(url: str) -> bytes:
 def format_story_content(story_data: Dict, uploaded_image_urls: List[str] = None) -> Dict:
     """Format story data for Supabase upload"""
     
-    texts = [story_data['text']]
-    print ("texts: ", texts)
-    # Create structured content - store all texts in body array as requested
+    # Get the content that was sent from frontend
+    content_data = story_data.get('content', {})
+    print("content_data from frontend:", content_data)
+    
+    # Create structured content - use the content structure sent from frontend
     content = {
-        "title": story_data['title'],
-        "hook": texts[0] if len(texts) > 0 else "",
-        "body": texts,  # Store all story texts in body array
-        "call_to_action": texts[-1] if len(texts) > 1 else "",
-        "full_text": texts[0]
+        "title": story_data.get('title', ''),
+        "hook": content_data.get('hook', ''),
+        "body": content_data.get('body', ''),
+        "call_to_action": content_data.get('call_to_action', ''),
+        "full_text": content_data.get('full_text', ''),
     }
-    print("content = ", content)
+    print("formatted content:", content)
     return content
 
 @app.route('/health',methods=['GET'])

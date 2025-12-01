@@ -1,0 +1,5 @@
+GEMINI_API_KEY= your gemini api key
+SUPABASE_URL=your supabase url
+SUPABASE_KEY= your public supabase key
+SUPABASE_SECRET_KEY=your supabase secret key
+OPENAI_API_KEY=x 
